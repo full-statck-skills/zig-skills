@@ -1,45 +1,90 @@
-# Zig 0.15.x Agent Skill
+# Zig Skills
 
-An [Agent Skill](https://agentskills.io/) for the Zig programming language, targeting version 0.15.x.
+Agent Skills for Zig 0.16.0 and adjacent Zig ecosystem workflows.
 
-## Why This Exists
+## Overview
 
-LLMs struggle with Zig more than languages like TypeScript or Swift. The language is still evolving, there's less training data available, and models frequently use deprecated or removed syntax. This skill provides up-to-date context to guide models toward correct, idiomatic Zig code.
+This repository now centers on one large main Zig skill plus two ecosystem skills:
 
-## What's Included
+- `zig-0.16`: the primary Zig 0.16.0 language, std, build system, migration, and review skill
+- `zig-raylib`: Zig projects using raylib-zig
+- `zig-sdl3-bindings`: Zig projects using zig-sdl3
 
-- **SKILL.md**: 357 lines covering critical patterns and common mistakes
-- **references/**: 51 files totaling ~21,500 lines of documentation
-  - Standard library module documentation
-  - Idiomatic patterns (from [Zig Code Patterns](https://ziggit.dev/t/code-patterns/1748))
-  - Build system guidance
-  - Language reference content
+This matches the original repository shape more closely than the earlier over-split `zig-0.16-*` plan, while still keeping the content versioned and grounded in the official 0.16.0 docs.
 
-## How It Was Made
+## Repository Layout
 
-Generated using Claude Opus 4.5 with the Zig standard library source code as context. Each module was documented by feeding the model the actual source files and using the [skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md) to structure the output.
-
-The methodology prioritizes grounding the model in real source code rather than hallucinated documentation.
-
-See https://austinrude.com/blog/making-a-zig-agent-skill/ for details.
-
-## Usage
-
-Install the `zig` directory into `~/.claude/skills/` per [Claude Code skill documentation](https://docs.anthropic.com/en/docs/claude-code/skills).
-
-Example prompt:
-```
-Using the zig skill please review @src/ and help me improve the codebase.
+```text
+zig-skills/
+├── skills/
+│   ├── zig/
+│   ├── zig-0.16/
+│   │   ├── examples/
+│   │   └── references/
+│   ├── zig-raylib/
+│   └── zig-sdl3-bindings/
+├── scripts/
+├── README.md
+└── README.zh-CN.md
 ```
 
-## Feedback
+## Skills
 
-Please [open an issue](https://github.com/rudedogg/zig-skill/issues) if you find any hallucinations, inaccuracies, or outdated patterns. No need to write a detailed report with a fix—just knowing about the problem helps improve the skill.
+### `zig-0.16`
 
-## Specification
+The main aggregate skill for Zig 0.16.0.
 
-This skill follows the [Agent Skills Specification](https://agentskills.io/).
+It consolidates:
 
-## License
+- the official language reference
+- the official introduction
+- the official standard library index
+- the Zig Chinese homepage positioning and sample
+- the local offline `references/` set copied from the existing `zig` skill
+- local `examples/` entry points for quick offline use
 
-MIT
+Use it when you need:
+
+- modern Zig 0.16 syntax and semantics
+- `build.zig` and `build.zig.zon` guidance
+- std module selection and usage
+- comptime, metaprogramming, and builtins
+- C interop or toolchain workflows
+- migration away from stale 0.14/0.15-era examples
+- Zig code review and debugging
+
+### `zig-raylib`
+
+The ecosystem skill for building games and graphics applications with raylib-zig.
+
+### `zig-sdl3-bindings`
+
+The ecosystem skill for building multimedia and cross-platform applications with zig-sdl3.
+
+## Relationship To `zig`
+
+`skills/zig/` remains in the repository as the previous aggregate skill and as the source of the local reference corpus.
+
+`skills/zig-0.16/` is now the preferred main skill for current work because it:
+
+- keeps the same aggregate-skill shape the repository already used
+- updates the guidance to Zig 0.16.0
+- adds stronger official source mapping
+- keeps offline references and examples so the skill still works without live fetching
+
+## Official Documentation Sources
+
+The main `zig-0.16` skill is grounded in:
+
+- https://ziglang.org/documentation/0.16.0/
+- https://ziglang.org/documentation/0.16.0/#Introduction
+- https://ziglang.org/documentation/0.16.0/std/
+- https://ziglang.org/zh-CN/
+- https://ziglang.org/learn/build-system/
+- https://ziglang.org/download/0.16.0/release-notes.html
+
+## Notes
+
+- `skills/zig-0.16/` is the preferred entry point for main Zig language work.
+- `skills/zig/` remains useful as a compatibility and source-material skill.
+- The repository no longer treats the earlier fine-grained `zig-0.16-*` split as the primary direction.
