@@ -1,13 +1,58 @@
 ---
 name: zig-sdl3-bindings
-description: Zig bindings for SDL3 multimedia library. Use for cross-platform game
-  development, graphics, audio, input handling. Covers windowing, rendering, GPU
-  compute, events, gamepads, audio streams, networking. Emphasizes Zig-specific
-  patterns like error handling with try/catch, defer for cleanup, custom allocator
-  integration, callback wrappers, and fromSdl/toSdl type conversions.
+description: Zig bindings for SDL3 multimedia library. Use for cross-platform game development, graphics, audio, input handling. Covers windowing, rendering, GPU compute, events, gamepads, audio streams, networking. Emphasizes Zig-specific patterns like error handling with try/catch, defer for cleanup, custom allocator integration, callback wrappers, and fromSdl/toSdl type conversions.
 ---
 
 # Zig SDL3 Bindings Reference
+
+> This skill covers Zig bindings for the SDL3 multimedia library. Use for cross-platform game development, graphics, audio, and input handling.
+
+## Capability Boundaries
+
+### ✅ Strong Suits
+1. Cross-platform window management and event handling
+2. 2D/3D rendering and GPU compute
+3. Audio streams and gamepad input
+4. File system and networking
+5. Zig-specific binding patterns (try/catch, defer, allocator integration)
+
+### ⚠️ Requirements
+1. Requires SDL3 native library (installed via system package manager or compiled)
+2. Requires zig-sdl3 dependency
+
+### ❌ Out of Scope (with alternatives)
+1. Do not use this for raylib game development → use zig-raylib skill instead
+2. Do not use this for Zig language basics → use zig-0.16 skill instead
+3. Do not use this for other language SDL3 development → use the corresponding language skill
+
+## When to use
+
+Use this skill when the user needs to write cross-platform games/multimedia applications, handling windows, rendering, audio, or input.
+
+## Data Privacy
+
+This skill does not collect, store, or transmit any user data.
+
+# Zig SDL3 Bindings Reference
+
+## Quick Start
+
+**Example invocations:**
+```
+Create an SDL3 + Zig window
+Handle keyboard events in SDL3
+How to use zig-sdl3 GPU rendering
+Play audio with SDL3
+```
+
+## Workflow
+
+Step 1. **Configure dependencies** — Add zig-sdl3 to build.zig.zon, install SDL3 native library
+Step 2. **Initialize SDL3** — Call sdl3.init() to initialize subsystems
+Step 3. **Create window** — Use sdl3.Window.create to create the main window
+Step 4. **Event loop** — Process events in a while (sdl3.pollEvent()) loop
+Step 5. **Render** — Use SDL3 renderer or GPU API for drawing
+Step 6. **Clean exit** — Use defer to clean up windows and SDL subsystems
 
 Idiomatic Zig bindings for SDL3, wrapping the C API with Zig patterns: error unions, optionals, slices, and defer-based resource management.
 
@@ -570,3 +615,34 @@ const c = sdl3.c;  // Raw SDL3 C API
 // Use C functions directly
 const result = c.SDL_SomeUnwrappedFunction();
 ```
+
+## Audience
+
+| User Type | Usage |
+|-----------|-------|
+| **Cross-platform app developers** | Create multimedia applications with SDL3 |
+| **Game developers** | Use SDL3 low-level graphics/audio/input |
+| **Embedded developers** | Use SDL3's multi-platform abstraction layer |
+
+Customization:
+- Specify SDL3 subsystems (video/audio/gamepad/net etc.)
+- Specify rendering mode (software / GPU)
+
+## Gotchas
+
+1. **SDL3 native library dependency** — zig-sdl3 depends on the system-installed SDL3 native library (`libSDL3`), not a pure Zig implementation. Use `verify` to check if the library is installed.
+2. **build.zig.zon hash** — Dependency hash must be obtained from the compiler's first build error
+3. **Extension libraries are optional** — SDL_image, SDL_ttf, SDL_net etc. must be enabled via build options
+4. **Defer cleanup** — Windows, renderers, textures must be cleaned up with defer. Use a validation checklist to confirm all resources are released.
+5. **Event loop mode** — SDL3 supports both traditional polling and main callback modes. Pick one and stay consistent.
+
+## FAQ
+
+**Q: Do I need to install the SDL3 native library?**
+A: Yes. Install the SDL3 development library (e.g. Ubuntu: `libsdl3-dev`, macOS: `brew install sdl3`).
+
+**Q: How does this skill differ from `zig-raylib`?**
+A: SDL3 provides a lower-level multimedia abstraction, suitable for projects needing fine-grained control over windows/events/audio. raylib focuses on game development convenience.
+
+**Q: Does SDL3 support Wayland/X11?**
+A: SDL3 auto-detects the display backend; no manual configuration is needed.

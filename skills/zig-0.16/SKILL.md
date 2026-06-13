@@ -5,7 +5,36 @@ description: Up-to-date Zig 0.16.0 language and standard library skill. Use when
 
 # Zig Language Reference (v0.16.0)
 
+This skill covers the Zig 0.16.0 language and standard library. Use it when writing, reviewing, or migrating Zig code, working with build.zig / build.zig.zon, standard library modules, and comptime metaprogramming.
+
 Zig evolves rapidly. Training data, blog posts, and many public examples are stale. This skill is the main Zig 0.16.0 aggregate skill for this repository: it condenses the official 0.16.0 language reference, the official std index, the Chinese Zig homepage, and the local offline reference set under `references/`.
+
+## Capability Boundaries
+
+### ✅ Strong Suits
+1. Writing and optimizing Zig 0.16.0 code with standard library modules
+2. Using the build.zig / build.zig.zon build system
+3. Comptime metaprogramming, builtin functions, and type reflection
+4. C interop: @cImport, linking, header management
+5. Code review and migration: older versions → 0.16.0
+
+### ⚠️ Requirements
+1. Target version must be confirmed as 0.16.0 (run `zig version`)
+2. Library-specific work (raylib/SDL3) should switch to the dedicated skill
+3. Platform-specific APIs may require additional OS knowledge
+
+### ❌ Out of Scope (with alternatives)
+1. Game/graphics API development → use zig-raylib or zig-sdl3-bindings
+2. Database/backend service development → use appropriate domain skill
+3. Non-Zig language coding → use the corresponding language skill
+
+## When to use this skill
+
+Use this skill when the user needs to write, review, debug, or migrate Zig 0.16.0 code, or when working with build.zig / build.zig.zon, std modules, comptime, or C interop.
+
+## Data Privacy
+
+This skill does not collect, store, or transmit any user data. All code examples are for local development reference only.
 
 ## Official Positioning
 
@@ -25,6 +54,28 @@ From the Zig 0.16.0 docs and Chinese homepage, Zig is a general-purpose programm
 - [Chinese homepage](https://ziglang.org/zh-CN/)
 - [Build system documentation](https://ziglang.org/learn/build-system/)
 - [0.16.0 release notes](https://ziglang.org/download/0.16.0/release-notes.html)
+
+## Quick Start
+
+**Example invocations:**
+```
+Write an HTTP server in Zig 0.16 using std.http
+Create a build.zig that depends on a third-party library
+Review this Zig code for 0.16 compatibility issues
+Migrate this Zig 0.14 project to 0.16
+```
+
+## Workflow
+
+Step 1. **Confirm version** — Run `zig version` to verify the user is on 0.16.0
+
+Step 2. **Review official reference** — Read the main skill body for the overall framework
+
+Step 3. **Look up std modules** — Find the relevant module from the std index, then load the matching `references/` file
+
+Step 4. **Use examples** — Load copyable code snippets from `examples/`
+
+Step 5. **Handle migrations** — For legacy code, check the Removed Features and Breaking Changes sections
 
 ## Critical: How to use this skill
 
@@ -356,6 +407,9 @@ switch (value) {
 | `posix.sendfile` examples fail | Use file writer APIs such as `.sendFileAll()` |
 | `std.fmt.Formatter` examples fail | Use `std.fmt.Alt` in modern code |
 | `fmtSliceEscapeLower`/`fmtSliceEscapeUpper` missing | Use `std.ascii.hexEscape(bytes, .lower/.upper)` |
+| User's zig version is not 0.16.0 | Confirm version, then guide to upgrade or switch skills |
+| User asks about raylib/SDL3 API | Guide to use zig-raylib / zig-sdl3-bindings |
+| Code from old blog/tutorial with unknown version | Use Quick Fixes table to check each compilation error pattern |
 | Need module-specific details | Load the matching local `references/*.md` file |
 | Build-system API uncertainty | Check both local `std-build.md` and the official build-system docs |
 
@@ -462,6 +516,45 @@ Load these references when working with specific modules:
 ### Patterns & Best Practices
 - **[Zig Patterns](references/patterns.md)** - Practical patterns for writing and reviewing Zig code
 - **[Code Review](references/code-review.md)** - Review checklist and stale-pattern detection
+
+## Audience
+
+| User Type | Usage |
+|-----------|-------|
+| **Zig beginners** | Write basic code and learn 0.16 API patterns |
+| **Migration users** | Migrate from older versions by following the Critical sections |
+| **Experienced developers** | Deep-dive into std modules via references/ and copy patterns from examples/ |
+
+Customization options:
+- Specify output format (full code / snippet / diff)
+- Request a specific module focus (e.g., build.zig only or I/O only)
+
+## Gotchas
+
+1. **Always confirm the version first** — Verify `zig version` is 0.16.0 before giving advice; API differences cause compilation errors
+2. **build.zig requires root_module** — `addExecutable`/`addLibrary` no longer accept `root_source_file`; use `root_module = b.createModule(...)`
+3. **std.Io pattern is mandatory** — Old `std.io` patterns (e.g. `std.io.getStdOut().writer()`) do not compile under 0.16.0
+4. **Container init does not use `.{ }`** — ArrayList/HashMap must use `.empty` or `.init`
+5. **Format strings need `{f}`** — Custom formatter output requires `{f}` instead of `{}`
+6. **Prefer offline references** — Use `references/` local files over web search to ensure 0.16.0 consistency
+7. **Do not assume the latest compiler** — If the user's version is not 0.16.0, guide them to upgrade or switch skills
+
+## FAQ
+
+**Q: How does this skill differ from `zig-0.15`?**
+A: `zig-0.16` is the primary skill covering the latest stable 0.16.0 release. `zig-0.15` is retained as a legacy compatibility reference.
+
+**Q: What if example code fails to compile?**
+A: Verify `zig version` outputs 0.16.0. If the version differs, some APIs may have changed. Use the Quick Fixes table to diagnose.
+
+**Q: How do I find a specific std module?**
+A: Look up the module name in the Standard Library References section, then load the matching `references/*.md` file.
+
+**Q: Can I use this offline?**
+A: Yes. All references/ and examples/ files are local copies and work without internet access.
+
+**Q: Does this skill collect my code?**
+A: No. This skill is a pure documentation reference and does not collect any user data.
 
 ### Serialization
 - **[std.json](references/std-json.md)** - JSON parsing, serialization, dynamic values, streaming

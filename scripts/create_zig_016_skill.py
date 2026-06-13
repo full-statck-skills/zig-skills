@@ -4,7 +4,7 @@ import textwrap
 
 
 REPO = Path(__file__).resolve().parents[1]
-OLD_SKILL = REPO / "skills" / "zig"
+OLD_SKILL = REPO / "skills" / "zig-0.15"
 NEW_SKILL = REPO / "skills" / "zig-0.16"
 
 

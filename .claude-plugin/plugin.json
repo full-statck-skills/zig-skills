@@ -1,0 +1,20 @@
+{
+  "name": "zig-skills",
+  "version": "1.0.0",
+  "description": "Zig language skills",
+  "author": {
+    "name": "PartMeAI",
+    "email": "partmeai@gmail.com"
+  },
+  "homepage": "https://github.com/full-statck-skills/zig-skills",
+  "repository": "https://github.com/full-statck-skills/zig-skills",
+  "source": "./",
+  "skills": [
+    "./skills/zig-0.15",
+    "./skills/zig-0.16",
+    "./skills/zig-code-review",
+    "./skills/zig-tiger-style",
+    "./skills/zig-raylib",
+    "./skills/zig-sdl3-bindings"
+  ]
+}

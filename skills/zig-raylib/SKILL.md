@@ -1,13 +1,64 @@
 ---
-name: zig-raylib-5.5
+name: zig-raylib
 description: Zig bindings for raylib 5.5 game development library. Use when writing raylib games/applications in Zig, working with 2D/3D graphics, handling input, loading textures/sounds/models, or implementing game loops. Covers idiomatic Zig patterns for raylib including error handling with RaylibError, resource management with defer, Camera2D/Camera3D systems, collision detection, skeletal animation, shaders, PBR materials, and audio playback.
 ---
+
+# Zig raylib Bindings Reference
+
+> This skill covers Zig bindings for the raylib 5.5 game development library. Use for 2D/3D graphics, input handling, texture/audio/model loading, or implementing game loops.
+
+## Capability Boundaries
+
+### ✅ Strong Suits
+1. 2D/3D graphics rendering
+2. Game loops and input handling
+3. Texture, audio, model loading and management
+4. Camera2D/Camera3D systems
+5. Collision detection, shaders, PBR materials, skeletal animation
+
+### ⚠️ Requirements
+1. Requires Zig compiler version ≥ 0.15.1
+2. Requires raylib-zig dependency (added via build.zig.zon)
+
+### ❌ Out of Scope (with alternatives)
+1. Do not use this for SDL3 multimedia development → use zig-sdl3-bindings skill instead
+2. Do not use this for Zig language basics → use zig-0.16 skill instead
+3. Do not use this for other language game development → use the corresponding language skill
+
+## When to use
+
+Use this skill when the user needs to write raylib games/applications, handle 2D/3D graphics, input, or game loops.
+
+## Data Privacy
+
+This skill does not collect, store, or transmit any user data.
 
 # Zig raylib 5.5 Bindings Reference
 
 Idiomatic Zig bindings for raylib 5.5, wrapping the C API with Zig patterns: error unions, optionals, slices, and defer-based resource management.
 
 **Version:** raylib 5.5+ (raylib-zig bindings)
+**Minimum Zig:** 0.15.1
+
+## Quick Start
+
+**Example invocations:**
+```
+Create a raylib + Zig window with a triangle
+Load a texture and draw a sprite in raylib
+Set up Camera2D to follow the player
+Implement audio playback in raylib
+```
+
+## Workflow
+
+Step 1. **Configure dependencies** — Add raylib-zig to build.zig.zon, import the module in build.zig
+Step 2. **Initialize window** — Use rl.initWindow() to set up the window and rendering context
+Step 3. **Implement game loop** — Draw in a while (!rl.windowShouldClose()) loop
+Step 4. **Load resources** — Load textures, audio, models; use defer to ensure cleanup
+Step 5. **Handle input** — Respond to keyboard/mouse/gamepad input
+Step 6. **Release resources** — Free all resources before closing the window
+
 **Minimum Zig:** 0.15.1
 
 ## Critical: Build Configuration
@@ -481,3 +532,34 @@ if (rl.checkCollisionBoxSphere(box, sphereCenter, sphereRadius)) {
 
 ### Examples
 - **[Code Examples](references/examples.md)** - Complete example patterns
+
+## Audience
+
+| User Type | Usage |
+|-----------|-------|
+| **Game developers** | Create 2D/3D games with raylib |
+| **Graphics learners** | Learn Zig + graphics API development |
+| **Prototype developers** | Quickly create interactive graphical demos |
+
+Customization:
+- Specify target platform (desktop / mobile)
+- Specify graphics level (2D / 3D)
+
+## Gotchas
+
+1. **Version dependency** — The build.zig.zon hash must be obtained from the compiler's first build error; cannot be pre-filled
+2. **Raygui is optional** — Only add raygui when you need GUI widgets
+3. **Defer resource management** — Textures, audio, and models must use defer for unload; verify cleanup coverage
+4. **Camera2D vs Camera3D** — 2D games use Camera2D, 3D games use Camera3D; the rendering flow differs
+5. **Performance** — Avoid many separate BeginDrawing()/EndDrawing() calls per frame. Use a validation checklist for performance bottlenecks
+
+## FAQ
+
+**Q: How does this skill differ from `zig-sdl3-bindings`?**
+A: raylib focuses on "batteries-included" game development. SDL3 provides a lower-level, more flexible multimedia interface.
+
+**Q: How do I add raylib as a dependency?**
+A: Add the raylib-zig git dependency in build.zig.zon, then import the module and link the library in build.zig.
+
+**Q: Does raylib support Android/iOS?**
+A: raylib-zig supports multiple platforms, but mobile packaging requires additional cross-compilation toolchain configuration.

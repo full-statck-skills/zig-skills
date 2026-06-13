@@ -5,12 +5,54 @@ description: Review Zig project code for style, correctness, and logic. Invoke w
 
 # Zig Code Review
 
+## Capability Boundaries
+
+### ✅ Strong Suits
+1. Reviewing Zig code style and consistency
+2. Checking correctness and safety (error handling, memory, lifetimes)
+3. Checking code structure and logic clarity
+4. Zig version compatibility checks
+
+### ⚠️ Requirements
+1. Requires code to review (diff, file list, or code snippet)
+2. Requires a target Zig version
+
+### ❌ Out of Scope
+1. Writing new code → use zig-0.16 skill
+2. Non-Zig code review → use the appropriate language review skill
+
+## When to use
+
+Use this skill when the user needs to review a Zig PR/commit/diff, audit coding conventions, or check code quality.
+
+## Data Privacy
+
+This skill does not collect, store, or transmit any user data. All reviews happen entirely within the local conversation.
+
 This skill reviews Zig project code for:
 
 - Code style and consistency (project conventions + Zig style guide)
 - Correctness and safety (errors, memory, lifetimes, resource cleanup)
 - Code-structure and logic clarity (functions/modules responsibilities, control flow)
 - Zig version compatibility pitfalls (build system, I/O, container init, removed features)
+
+## Quick Start
+
+**Example invocations:**
+```
+Review this Zig code: <paste code>
+Check this diff for Zig version compatibility issues
+Review this commit's Zig code quality
+```
+
+## Workflow
+
+Step 1. **Determine review scope** — Get diff, file list, or modules to review
+Step 2. **Confirm Zig version** — Check via `zig version` or project config. When reviewing code, load the matching reference file from references/.
+Step 3. **Run mechanical checks** — Check formatting `zig fmt`, removed APIs, build config
+Step 4. **Review logic & correctness** — Control flow, boundary checks, error propagation
+Step 5. **Review resources & memory** — Allocator choice, defer/errdefer, lifetimes
+Step 6. **Output structured feedback** — Use the Output Template
 
 ## When to Invoke
 
@@ -144,3 +186,35 @@ Use these quick checks when you need fast feedback or when you don’t have acce
 - Error paths do not bypass cleanup; early returns do not leak resources
 - Branching is explicit; avoid deeply nested conditionals when a guard clause is clearer
 - Boundary checks are near the boundary; do not assume inputs are valid unless enforced by types
+
+## Audience
+
+| User Type | Usage |
+|-----------|-------|
+| **Zig developers** | Self-check before commit, or review team PRs |
+| **Project maintainers** | Unify team coding conventions |
+| **CI pipeline** | Reference as code quality gate |
+
+Customization:
+- Specify review strictness (strict / standard / light)
+- Specify focus area (security / style / full)
+- Specify output format (full report / blocking only / suggestions only)
+
+## Gotchas
+
+1. **Confirm version before review** — Different Zig versions have significant API differences; always check the target
+2. **Don't over-suggest** — Some patterns (e.g. `catch unreachable`) may be intentional design choices
+3. **Project conventions first** — Always prioritize the project's existing conventions over external standards
+4. **Consistent output** — Use the same output template for every review so readers find issues quickly
+
+## FAQ
+
+**Q: What information is needed for a review?**
+A: At minimum, a Zig code snippet or diff, plus the target version.
+
+**Q: How does this skill relate to `zig-0.16`?**
+A: `zig-code-review` focuses on the review process and standards. `zig-0.16` provides language reference and API details. They complement each other.
+
+**Q: Can you auto-fix found issues?**
+A: Suggestions are provided but not applied directly. The user can confirm before applying.
+

@@ -1,11 +1,53 @@
 ---
-name: zig
+name: zig-0.15
 description: Up-to-date Zig programming language patterns for version 0.15.x. Use when writing, reviewing, or debugging Zig code, working with build.zig and build.zig.zon files, or using comptime metaprogramming. Critical for avoiding outdated patterns from training data - especially build system APIs (root_module instead of root_source_file), I/O APIs (buffered writer pattern), container initialization (.empty/.init), allocator selection (DebugAllocator), and removed language features (async/await, usingnamespace).
 ---
 
-# Zig Language Reference (v0.15.2)
+# Zig Language Reference (v0.15)
 
-Zig evolves rapidly. Training data contains outdated patterns that cause compilation errors. This skill documents breaking changes and correct modern patterns.
+This skill covers Zig 0.15.x language and standard library. It is retained as a compatibility reference alongside the primary zig-0.16 skill.
+
+## Capability Boundaries
+
+### ✅ Strong Suits
+1. Writing and reviewing Zig 0.15.x code
+2. Understanding breaking changes from 0.14 to 0.15
+3. Using the build.zig / build.zig.zon build system (legacy)
+4. Comptime metaprogramming and builtin functions
+
+### ⚠️ Requirements
+1. Target version must be 0.15.x
+2. For new projects, prefer zig-0.16 (0.16.0 is the latest stable)
+
+### ❌ Out of Scope (with alternatives)
+1. Do not use this for Zig 0.16.0 development → use zig-0.16 skill instead
+2. Do not use this for game/graphics development → use zig-raylib or zig-sdl3-bindings
+
+## When to use
+
+Use this skill when the user confirms they are targeting Zig 0.15.x and need to write or review legacy code.
+
+## Data Privacy
+
+This skill does not collect, store, or transmit any user data. All code examples are for local development reference only.
+
+## Quick Start
+
+**Example invocations:**
+```
+Write a program in Zig 0.15, scaffold the project
+Check if this build.zig compiles under 0.15
+Review this code for 0.14→0.15 compatibility issues
+```
+
+## Workflow
+
+Step 1. **Confirm version** — Ask the user to run `zig version` to confirm 0.15.x
+Step 2. **Check breaking changes** — Review the Removed Features section for deprecated APIs
+Step 3. **Check I/O patterns** — Use the correct `std.Io` pattern instead of legacy `std.io`
+Step 4. **Check build system** — Use `root_module`-based build.zig API
+Step 5. **Container init** — Use `.empty`/`.init` instead of `.{ }`
+Step 6. **Output code** — Provide complete compilable examples
 
 ## Critical: Removed Features (0.15.x)
 
@@ -364,3 +406,34 @@ Load these references when working with specific modules:
 
 ### Interoperability
 - **[C Interop](references/c-interop.md)** - Exporting C-compatible APIs: `export fn`, C calling convention, building static/dynamic libraries, creating headers, macOS universal binaries, XCFramework for Swift/Xcode, module maps
+
+## Audience
+
+| User Type | Usage |
+|-----------|-------|
+| **Zig 0.15 users** | Maintain legacy projects, understand 0.14→0.15 changes |
+| **Migration users** | Replace deprecated APIs by following the Critical sections |
+| **Compatibility checkers** | Verify existing code works under 0.15 |
+
+Customization: specify output format (full code / diff / snippet).
+
+## Gotchas
+
+1. **Always confirm the version first** — User code may come from any older version; run `zig version` to check
+2. **build.zig API differences** — 0.15.x `addExecutable` uses `root_module` instead of the old `root_source_file`
+3. **std.Io pattern** — 0.15 partially adopts the new `std.Io` pattern; old `std.io` is incompatible
+4. **Container initialization** — `.{ }` for ArrayList etc. will error; use `.empty` or `.init`
+5. **Format strings** — Custom formatters require `{f}` instead of `{}`
+6. **Removed features** — `async`/`await`, `usingnamespace`, `@fence` are fully removed
+
+## FAQ
+
+**Q: Should I use `zig-0.15` or `zig-0.16`?**
+A: For new projects, prefer `zig-0.16`. `zig-0.15` is retained for compatibility with existing 0.15 projects.
+
+**Q: What is the biggest difference between 0.15 and 0.14?**
+A: The I/O API rewrite (std.io → std.Io) and the introduction of `root_module` in build.zig.
+
+**Q: How do I create an executable in 0.15?**
+A: Use `b.addExecutable(.{ .name = "...", .root_module = b.createModule(...) })`.
+
