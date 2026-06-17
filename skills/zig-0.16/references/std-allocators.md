@@ -578,6 +578,119 @@ const MyAllocator = struct {
 **Validation wrapper** - for testing allocators:
 ```zig
 var my_alloc = MyAllocator.init();
-var validated = std.mem.validationWrap(my_alloc.allocator());
-const allocator = validated.allocator();  // Adds safety checks
+	var validated = std.mem.validationWrap(my_alloc.allocator());
+	const allocator = validated.allocator();  // Adds safety checks
+	```
+
+## Memory Model
+
+### Where Are the Bytes?
+
+Zig gives you explicit control over where data lives:
+
 ```
+Stack                Heap                  Static/Global
+┌──────────┐         ┌──────────┐          ┌──────────┐
+│ Local     │         │ Allocated │          │ Comptime │
+│ variables │         │ via       │          │ constants│
+│ (cannot   │         │ allocator │          │ (read-   │
+│  return)  │         │ (must     │          │  only)   │
+└──────────┘         │  free)    │          └──────────┘
+                     └──────────┘
+```
+
+#### Stack
+
+```zig
+fn example() void {
+    var buf: [1024]u8 = undefined;  // stack allocated
+    var point = Point{ .x = 1, .y = 2 };  // stack allocated
+    // Cannot return &point — stack frame is invalid after return
+}
+```
+
+- Fast allocation (just a pointer bump)
+- No freeing needed (frame pop)
+- Size limited (typically 1-8 MiB, configurable)
+- **Cannot** return pointers to stack data
+
+#### Heap
+
+```zig
+fn example(allocator: Allocator) !void {
+    const buf = try allocator.alloc(u8, 1024);
+    defer allocator.free(buf);
+    const copied = try allocator.dupe(u8, "hello");
+    defer allocator.free(copied);
+}
+```
+
+- Allocation through explicit allocator
+- Must pair every allocation with a free
+- Can return pointers (ownership transfer)
+- Allocation can fail → must handle `error.OutOfMemory`
+
+### Heap Allocation Failure
+
+Zig does NOT handle OOM silently:
+
+```zig
+fn readFile(allocator: Allocator, path: []const u8) ![]u8 {
+    const content = try allocator.alloc(u8, file_size);
+    return content;
+}
+
+const data = readFile(allocator, "file.txt") catch |err| switch (err) {
+    error.OutOfMemory => return null,  // graceful degradation
+    else => return err,
+};
+```
+
+### Recursion
+
+Zig does NOT support arbitrary recursion in safe modes:
+
+```zig
+fn factorial(n: u64) u64 {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);  // stack overflow for large n
+}
+
+// Iterative alternative:
+fn factorial(n: u64) u64 {
+    var result: u64 = 1;
+    var i: u64 = 2;
+    while (i <= n) : (i += 1) result *= i;
+    return result;
+}
+```
+
+### Lifetime and Ownership
+
+Three key rules:
+
+1. **Owner frees** — the function that allocates owns it and must free it
+2. **Borrowed pointers are temporary** — must not outlive the data
+3. **No GC, no ARC** — memory lifetime is explicit
+
+```zig
+fn getData(allocator: Allocator) ![]u8 {
+    return allocator.dupe(u8, "hello");  // ownership returns to caller
+}
+
+fn process(data: []const u8) void {
+    _ = data;  // borrow — must not store beyond scope
+}
+
+const data = try getData(allocator);
+defer allocator.free(data);  // caller must free
+process(data);
+```
+
+### Naming Convention Recap
+
+| Name | Contract | Can Return Data? |
+|------|----------|------------------|
+| `gpa` | Caller must free with `defer` | Yes |
+| `arena` | Bulk-deallocated at boundary | Yes |
+| `scratch` | Function-private temporary | **Never** |

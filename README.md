@@ -20,7 +20,7 @@ English | [简体中文](./README.zh-CN.md)
 
 **Zig Skills** is a curated collection of Agent Skills for AI coding agents focused on the [Zig programming language](https://ziglang.org) and its ecosystem, part of the [Full Stack Skills](https://github.com/partme-ai/full-stack-skills) ecosystem maintained by [PartMe.AI](https://github.com/partme-ai).
 
-This package includes **6 skills**, centered on one primary Zig 0.16.0 aggregate skill plus ecosystem and tooling companions. Each skill is a self-contained `SKILL.md` file that AI agents load on-demand.
+This package includes **13 skills** organized into four layers: **Core Language** (syntax & std lib), **Project Engineering** (scaffolding & build), **Domain Specialized** (HTTP, crypto, JSON, concurrency, testing, graphics), and **Quality & Style** (review & guidelines). Each skill is a self-contained `SKILL.md` file that AI agents load on-demand.
 
 ## 📦 Install
 
@@ -30,16 +30,36 @@ npx skills add full-statck-skills/zig-skills
 
 Or install specific skills: `npx skills add full-statck-skills/zig-skills --skill <skill-name>`
 
-## 🎯 Skills (6)
+## 🎯 Skills (13) by Layer
 
-| Skill | Description |
-|-------|-------------|
-| `zig-0.16` | **Primary skill.** Up-to-date Zig 0.16.0 language and standard library guidance. Use for writing, reviewing, debugging, or migrating Zig code, working with `build.zig`/`build.zig.zon`, std modules, comptime, C interop, and modern 0.16 APIs. |
-| `zig-0.15` | Previous-generation aggregate skill for Zig 0.15.x. Retained as a local reference corpus and compatibility fallback. Covers language patterns, build system APIs, I/O, allocators, and removed language features. |
-| `zig-code-review` | Review Zig project code for style, correctness, and logic. Invoke when reviewing PRs/diffs, assessing project conventions, or requesting a Zig-focused code quality audit. |
-| `zig-tiger-style` | TigerStyle Zig coding guidelines — distilled from the TigerBeetle production codebase. Use when writing, reviewing, or refactoring Zig code with a focus on performance-correct style conventions. |
-| `zig-raylib` | Zig bindings for raylib 5.5 game development library. Covers 2D/3D graphics, input, textures/sounds/models, game loops, idiomatic Zig patterns (defer, error handling, Camera2D/Camera3D), collision detection, skeletal animation, shaders, and audio playback. |
-| `zig-sdl3-bindings` | Zig bindings for SDL3 multimedia library. Covers cross-platform windowing, rendering, GPU compute, events, gamepads, audio streams, networking, and Zig-specific binding patterns. |
+```
+┌──────────────────────────────────────────────────────────────┐
+│              Layer 1: Core Language                         │
+│                                                              │
+│  zig-0.16 ──────── Primary skill, full language + std lib    │
+│  zig-0.15 ──────── Legacy compatibility (0.15.x)            │
+├──────────────────────────────────────────────────────────────┤
+│              Layer 2: Project Engineering                    │
+│                                                              │
+│  zig-project-structure  Project scaffolding + spec checks    │
+│  zig-build-system ────── Build.zig, modules, cross-compile   │
+├──────────────────────────────────────────────────────────────┤
+│              Layer 3: Domain Specialized                     │
+│                                                              │
+│  HTTP        zig-http ─────── std.http, WebSocket            │
+│  Crypto      zig-crypto ───── std.crypto, hash, AEAD         │
+│  Data        zig-json ─────── std.json, std.zon              │
+│  Concurrency zig-concurrency  std.Thread, std.atomic         │
+│  Testing     zig-testing ──── std.testing, std.debug         │
+│  Graphics    zig-raylib ───── raylib 5.5 game dev            │
+│  Multimedia  zig-sdl3-bindings  SDL3 multimedia              │
+├──────────────────────────────────────────────────────────────┤
+│              Layer 4: Quality & Style                        │
+│                                                              │
+│  zig-code-review  Code review for style & correctness        │
+│  zig-tiger-style  TigerStyle coding guidelines               │
+└──────────────────────────────────────────────────────────────┘
+```
 
 ## 📚 Repository Layout
 
@@ -50,7 +70,14 @@ zig-skills/
 │   ├── zig-0.16/                   # Current primary skill (0.16.0)
 │   │   ├── examples/               # Offline quick-start examples
 │   │   └── references/             # 40+ std lib & language references
+│   ├── zig-build-system/           # Build system specialization
 │   ├── zig-code-review/            # Code review skill
+│   ├── zig-concurrency/            # Concurrency & threading
+│   ├── zig-crypto/                 # Cryptography & security
+│   ├── zig-http/                   # HTTP networking
+│   ├── zig-json/                   # JSON & ZON data handling
+│   ├── zig-project-structure/      # Scaffolding & spec checker
+│   ├── zig-testing/                # Testing & debugging
 │   ├── zig-tiger-style/            # Tiger Style guidelines
 │   ├── zig-raylib/                 # raylib-zig ecosystem skill
 │   └── zig-sdl3-bindings/          # zig-sdl3 ecosystem skill
@@ -71,7 +98,7 @@ zig-skills/
 
 `skills/zig-0.15/` is retained as a **previous-generation aggregate skill** (Zig 0.15.x) and as the source of the local reference corpus. It remains useful for compatibility with older codebases and as supplemental reference material.
 
-The `zig-code-review` and `zig-tiger-style` skills complement `zig-0.16` with focused review and style guidance, while `zig-raylib` and `zig-sdl3-bindings` cover the leading Zig graphics/game development ecosystem libraries.
+The `zig-code-review`, `zig-tiger-style`, `zig-project-structure`, and `zig-build-system` skills cover project quality and engineering; `zig-http`, `zig-crypto`, `zig-json`, `zig-concurrency`, and `zig-testing` are domain-specific standard library deep-dives; while `zig-raylib` and `zig-sdl3-bindings` cover the leading Zig graphics/game development ecosystem libraries.
 
 ## 📖 Official Sources
 

@@ -10,7 +10,7 @@
 
 [English](./README.md) | 简体中文
 
-[简介](#-简介) · [安装](#-安装) · [技能列表](#-技能列表-6) · [仓库布局](#-仓库布局) · [关系说明](#-关系说明) · [官方来源](#-官方来源) · [支持的智能体](#-支持的智能体) · [生态](#-生态)
+[简介](#-简介) · [安装](#-安装) · [技能列表](#-技能列表-13) · [仓库布局](#-仓库布局) · [关系说明](#-关系说明) · [官方来源](#-官方来源) · [支持的智能体](#-支持的智能体) · [生态](#-生态)
 
 </div>
 
@@ -20,7 +20,7 @@
 
 **Zig 技能** 是一组面向 Zig 编程语言及其生态的 AI 编码智能体技能，属于 [Full Stack Skills](https://github.com/partme-ai/full-stack-skills) 生态，由 [PartMe.AI](https://github.com/partme-ai) 维护。
 
-本包包含 **6 个技能**，以一个 Zig 0.16.0 综合主技能为核心，辅以生态和工具链技能。每个技能是独立的 `SKILL.md` 文件，AI 智能体按需加载。
+本包包含 **13 个技能**，按四个层级组织：**核心语法**（语言与标准库）、**项目工程**（脚手架与构建）、**专项技能**（HTTP、加密、JSON、并发、测试、图形）、**质量风格**（审查与编码规范）。每个技能是独立的 `SKILL.md` 文件，AI 智能体按需加载。
 
 ## 📦 安装
 
@@ -30,16 +30,36 @@ npx skills add full-statck-skills/zig-skills
 
 或安装特定技能：`npx skills add full-statck-skills/zig-skills --skill <skill-name>`
 
-## 🎯 技能列表 (6)
+## 🎯 技能列表 (13) 按层级
 
-| 技能 | 描述 |
-|------|------|
-| `zig-0.16` | **主技能。** 最新的 Zig 0.16.0 语言与标准库指南。适用于编写、调试、审查或迁移 Zig 代码，以及使用 `build.zig`/`build.zig.zon`、标准库模块、comptime、C 互操作和现代 0.16 API。 |
-| `zig-0.15` | 上一代综合技能（Zig 0.15.x），保留作为本地参考语料库和兼容性回退。涵盖语言模式、构建系统 API、I/O、分配器和已删除的语言特性。 |
-| `zig-code-review` | 审查 Zig 项目代码的风格、正确性和逻辑。适用于审查 PR/diff、评估项目约定或进行 Zig 代码质量审计。 |
-| `zig-tiger-style` | 从 TigerBeetle 生产代码库提炼的 TigerStyle Zig 编码规范。适用于以性能优先的风格编写、审查或重构 Zig 代码。 |
-| `zig-raylib` | raylib 5.5 游戏开发库的 Zig 绑定。涵盖 2D/3D 图形、输入、纹理/音频/模型加载、游戏循环，以及惯用 Zig 模式（defer、错误处理、Camera2D/Camera3D）、碰撞检测、骨骼动画、着色器和音频播放。 |
-| `zig-sdl3-bindings` | SDL3 多媒体库的 Zig 绑定。涵盖跨平台窗口管理、渲染、GPU 计算、事件、手柄、音频流、网络和 Zig 特有绑定模式。 |
+```
+┌──────────────────────────────────────────────────────────┐
+│              Layer 1: 核心语法 (Core Language)            │
+│                                                          │
+│  zig-0.16 ←──────── 主技能，语言 + 全标准库综合            │
+│  zig-0.15 ←──────── 旧版兼容（保留不删）                    │
+├──────────────────────────────────────────────────────────┤
+│              Layer 2: 项目工程 (Project)                  │
+│                                                          │
+│  zig-project-structure  ← 项目创建 + 合规检查             │
+│  zig-build-system ────── ← build.zig 深度专项             │
+├──────────────────────────────────────────────────────────┤
+│              Layer 3: 专项技能 (Domain)                   │
+│                                                          │
+│  网络         zig-http ─────── std.http, WebSocket       │
+│  安全         zig-crypto ──── std.crypto, hash, AEAD     │
+│  数据         zig-json ────── std.json, std.zon          │
+│  并发         zig-concurrency  std.Thread, std.atomic    │
+│  测试         zig-testing ─── std.testing, std.debug     │
+│  游戏         zig-raylib ──── raylib 5.5                  │
+│  多媒体       zig-sdl3-bindings  SDL3                     │
+├──────────────────────────────────────────────────────────┤
+│              Layer 4: 质量风格 (Quality)                  │
+│                                                          │
+│  zig-code-review  ← 代码审查                              │
+│  zig-tiger-style  ← TigerStyle 编码规范                   │
+└──────────────────────────────────────────────────────────┘
+```
 
 ## 📚 仓库布局
 
@@ -50,7 +70,14 @@ zig-skills/
 │   ├── zig-0.16/                   # 当前主技能 (0.16.0)
 │   │   ├── examples/               # 离线快速入门示例
 │   │   └── references/             # 40+ 标准库与语言参考
+│   ├── zig-build-system/            # 构建系统专项
 │   ├── zig-code-review/            # 代码审查技能
+│   ├── zig-concurrency/            # 并发编程
+│   ├── zig-crypto/                 # 加密与安全
+│   ├── zig-http/                   # HTTP 网络编程
+│   ├── zig-json/                   # JSON / ZON 数据处理
+│   ├── zig-project-structure/      # 项目结构生成与检查
+│   ├── zig-testing/                # 测试与调试
 │   ├── zig-tiger-style/            # Tiger Style 指南
 │   ├── zig-raylib/                 # raylib-zig 生态技能
 │   └── zig-sdl3-bindings/          # zig-sdl3 生态技能
@@ -71,7 +98,7 @@ zig-skills/
 
 `skills/zig-0.15/` 保留作为**上一代综合技能**（Zig 0.15.x）和本地参考语料库来源，对旧代码兼容和补充参考仍有价值。
 
-`zig-code-review` 和 `zig-tiger-style` 技能为 `zig-0.16` 补充了集中的审查和风格指引，而 `zig-raylib` 和 `zig-sdl3-bindings` 则覆盖了 Zig 主流图形/游戏开发生态库。
+`zig-code-review`、`zig-tiger-style`、`zig-project-structure` 和 `zig-build-system` 技能覆盖项目质量和工程实践；`zig-http`、`zig-crypto`、`zig-json`、`zig-concurrency` 和 `zig-testing` 是标准库领域的深度专项；而 `zig-raylib` 和 `zig-sdl3-bindings` 则覆盖了 Zig 主流图形/游戏开发生态库。
 
 ## 📖 官方来源
 
