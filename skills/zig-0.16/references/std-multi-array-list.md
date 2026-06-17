@@ -1,137 +1,101 @@
 # std.MultiArrayList
 
-Struct-of-Arrays container for cache-efficient struct storage. Stores each field in a separate contiguous array, reducing padding overhead and improving cache locality when accessing individual fields.
+Struct-of-Arrays (SoA) container — stores each struct field in a separate contiguous array. Cache-efficient for field-focused access patterns.
 
 ## When to Use
 
-- Storing many structs where you often access only some fields
-- Performance-critical code benefiting from cache-friendly access patterns
-- Tagged unions (stores tags and data separately)
+- Often access only some fields of many structs
+- Cache-friendly column processing
+- Tagged unions (tags and data stored separately)
 
 ## Initialization
 
 ```zig
-const Item = struct {
-    id: u32,
-    name: []const u8,
-    score: f32,
-};
+const Item = struct { id: u32, name: []const u8, score: f32 };
 
 var list: std.MultiArrayList(Item) = .{};
 defer list.deinit(allocator);
 
-// Pre-allocate capacity
 try list.ensureTotalCapacity(allocator, 100);
 ```
 
 ## Basic Operations
 
 ```zig
-// Append
 try list.append(allocator, .{ .id = 1, .name = "foo", .score = 0.5 });
 list.appendAssumeCapacity(.{ .id = 2, .name = "bar", .score = 0.8 });
 
-// Get/set individual elements
-const item = list.get(0);          // returns full struct
-list.set(0, new_item);             // set full struct
+const item = list.get(0);        // full struct
+list.set(0, new_item);           // set full struct
 
-// Access individual field arrays (MAIN BENEFIT)
-const ids = list.items(.id);       // []u32 slice
-const scores = list.items(.score); // []f32 slice
-
-// Modify field directly
+// Field arrays (MAIN BENEFIT — contiguous per field)
+const ids = list.items(.id);       // []u32
+const scores = list.items(.score); // []f32
 list.items(.score)[0] = 1.0;
 
-// Pop last element
-const last = list.pop();  // returns ?Item
-
-// Length
+const last = list.pop();  // ?Item
 const n = list.len;
 ```
 
-## Slice API (More Efficient)
-
-When accessing multiple fields, use `slice()` to compute pointers once:
+## Slice API
 
 ```zig
 const slices = list.slice();
-
-// Now access fields without recomputing offsets
-for (slices.items(.id), slices.items(.score)) |id, score| {
-    // process id and score together
-}
-
-// Get/set via slice
-const item = slices.get(index);
-slices.set(index, new_item);
+// Reuse for multiple accesses without recomputing offsets
+for (slices.items(.id), slices.items(.score)) |id, score| { _ = .{id, score}; }
 ```
 
 ## Removal
 
 ```zig
-// O(1) but doesn't preserve order
-list.swapRemove(index);
-
-// O(n) but preserves order
-list.orderedRemove(index);
-
-// Remove multiple indices (must be sorted ascending)
-list.orderedRemoveMany(&.{ 1, 5, 7, 9 });
+list.swapRemove(index);       // O(1), order NOT preserved
+list.orderedRemove(index);    // O(n), order preserved
+list.orderedRemoveMany(&.{ 1, 5, 7 });  // must be sorted ascending
 ```
 
 ## Tagged Union Support
 
-MultiArrayList works with tagged unions, storing tags separately:
-
 ```zig
-const Value = union(enum) {
-    int: i64,
-    float: f64,
-    string: []const u8,
-};
+const Value = union(enum) { int: i64, float: f64, string: []const u8 };
 
 var values: std.MultiArrayList(Value) = .{};
 try values.append(allocator, .{ .int = 42 });
 try values.append(allocator, .{ .float = 3.14 });
 
-// Access tags and data separately
-const tags = values.items(.tags);   // []meta.Tag(Value)
-const data = values.items(.data);   // []Value.Bare (untagged union)
-
-// Reconstruct full union
-const full = values.get(0);  // Value{ .int = 42 }
+const tags = values.items(.tags);  // []meta.Tag(Value)
+const data = values.items(.data);  // untagged union data
 ```
 
 ## Sorting
 
 ```zig
-// Sort with custom comparator (index-based)
 list.sort(struct {
     scores: []const f32,
-
-    pub fn lessThan(ctx: @This(), a: usize, b: usize) bool {
+    fn lessThan(ctx: @This(), a: usize, b: usize) bool {
         return ctx.scores[a] < ctx.scores[b];
     }
 }{ .scores = list.items(.score) });
-
-// Also: sortUnstable, sortSpan, sortSpanUnstable
 ```
 
-## Capacity Management
+## Capacity
 
 ```zig
 try list.ensureTotalCapacity(allocator, 100);
 try list.ensureUnusedCapacity(allocator, 10);
-try list.resize(allocator, new_len);  // doesn't initialize
+try list.resize(allocator, new_len);
 list.shrinkAndFree(allocator, new_len);
-list.shrinkRetainingCapacity(new_len);
-list.clearRetainingCapacity();
 list.clearAndFree(allocator);
 ```
 
-## Clone and Transfer
+## Memory Layout
 
-```zig
-const copy = try list.clone(allocator);
-const owned_slice = list.toOwnedSlice();  // empties list, caller owns
 ```
+AoS: [id0][name0][s0][id1][name1][s1]...  (padding between fields)
+SoA: [id0][id1][id2]...  [name0][name1]...  [s0][s1][s2]...
+```
+
+## Gotchas
+
+1. **`items(.field)` — field name in parentheses**, not dot access.
+2. **`list.len` is a raw field** — read/write directly.
+3. **Sorting swaps field arrays** — use MultiArrayList's `sort` method, not `std.sort`.

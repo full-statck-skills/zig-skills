@@ -1,116 +1,126 @@
 # std.base64
 
-Base64 encoding/decoding per RFC 4648.
+Base64 encoding/decoding per RFC 4648. Multiple codec variants for different use cases.
 
 ## Quick Reference
 
-| Codec | Use Case |
-|-------|----------|
-| `standard` | Standard Base64 with `=` padding (email, MIME) |
-| `standard_no_pad` | Standard Base64 without padding |
-| `url_safe` | URL-safe Base64 with `=` padding |
-| `url_safe_no_pad` | URL-safe Base64 without padding (JWT, URLs) |
+| Codec | Alphabet | Padding | Use Case |
+|-------|----------|---------|----------|
+| `standard` | `A-Za-z0-9+/` | `=` | Email, MIME, general |
+| `standard_no_pad` | `A-Za-z0-9+/` | none | Compact storage |
+| `url_safe` | `A-Za-z0-9-_` | `=` | URL parameters |
+| `url_safe_no_pad` | `A-Za-z0-9-_` | none | JWT, cookies, filenames |
 
 ## Encoding
 
+### To Buffer
+
 ```zig
 const std = @import("std");
-const base64 = std.base64;
 
 const data = "Hello, World!";
 
-// Standard Base64 (with padding)
-var buf: [100]u8 = undefined;
-const encoded = base64.standard.Encoder.encode(&buf, data);
+// Calculate required size first
+const size = std.base64.standard.Encoder.calcSize(data.len);
+var buf: [size]u8 = undefined;
+const encoded = std.base64.standard.Encoder.encode(&buf, data);
 // "SGVsbG8sIFdvcmxkIQ=="
 
-// URL-safe without padding (common for JWTs)
-const encoded = base64.url_safe_no_pad.Encoder.encode(&buf, data);
+// URL-safe without padding (compact, no URL escaping needed)
+const encoded_url = std.base64.url_safe_no_pad.Encoder.encode(&buf, data);
 // "SGVsbG8sIFdvcmxkIQ"
+```
 
-// Calculate required buffer size
-const size = base64.standard.Encoder.calcSize(data.len);
+### To Allocated String
+
+```zig
+const encoded = try allocator.alloc(u8, std.base64.standard.Encoder.calcSize(data.len));
+_ = std.base64.standard.Encoder.encode(encoded, data);
+```
+
+### Streaming Write
+
+```zig
+var buf: [4096]u8 = undefined;
+var w: std.Io.Writer = .fixed(&buf);
+try std.base64.standard.Encoder.encodeWriter(&w, data);
+const result = w.buffered();
 ```
 
 ## Decoding
 
+### From Buffer
+
 ```zig
 const encoded = "SGVsbG8sIFdvcmxkIQ==";
 
-// Decode to buffer
-var buf: [100]u8 = undefined;
-const decoded_len = try base64.standard.Decoder.calcSizeForSlice(encoded);
-const decoded = buf[0..decoded_len];
-try base64.standard.Decoder.decode(decoded, encoded);
-// decoded = "Hello, World!"
+// Calculate decoded size
+const decoded_len = try std.base64.standard.Decoder.calcSizeForSlice(encoded);
 
-// Calculate max decoded size (before knowing padding)
-const max_size = try base64.standard.Decoder.calcSizeUpperBound(encoded.len);
+var buf: [decoded_len]u8 = undefined;
+try std.base64.standard.Decoder.decode(&buf, encoded);
+// buf = "Hello, World!"
 ```
 
-## Decoding with Ignored Characters
-
-Decode Base64 that contains whitespace or other characters to ignore:
+### Max Size Estimation
 
 ```zig
-const encoded = "SGVs bG8s\nIFdv cmxk IQ==";  // with spaces and newlines
-
-// Create decoder that ignores whitespace
-const decoder = base64.standard.decoderWithIgnore(" \n");
-
-var buf: [100]u8 = undefined;
-const max_size = try decoder.calcSizeUpperBound(encoded.len);
-const decoded_len = try decoder.decode(buf[0..max_size], encoded);
-const decoded = buf[0..decoded_len];
-// "Hello, World!"
+// Before knowing padding amount
+const max = try std.base64.standard.Decoder.calcSizeUpperBound(encoded.len);
+var buf: [max]u8 = undefined;
+const actual_len = try std.base64.standard.Decoder.decode(buf[0..], encoded);
+const decoded = buf[0..actual_len];
 ```
 
-## Streaming Encoding
+### With Ignored Characters
+
+Useful for PEM files, multi-line Base64, or whitespace-tolerant decoding:
+
+```zig
+const pem_data = "SGVs bG8s\nIFdv cmxk IQ==";  // spaces and newlines
+
+const decoder = std.base64.standard.decoderWithIgnore(" \n\r");
+
+const max = try decoder.calcSizeUpperBound(pem_data.len);
+var buf: [max]u8 = undefined;
+const len = try decoder.decode(buf[0..max], pem_data);
+// buf[0..len] = "Hello, World!"
+```
+
+### Streaming Read
 
 ```zig
 var buf: [4096]u8 = undefined;
-var writer = std.fs.File.stdout().writer(&buf);
-
-try base64.standard.Encoder.encodeWriter(&writer.interface, data);
-try writer.interface.flush();
-```
-
-## Codecs Detail
-
-```zig
-// Standard alphabet: A-Z, a-z, 0-9, +, /
-base64.standard            // with = padding
-base64.standard_no_pad     // without padding
-
-// URL-safe alphabet: A-Z, a-z, 0-9, -, _
-base64.url_safe            // with = padding
-base64.url_safe_no_pad     // without padding
-
-// Access alphabet characters directly
-base64.standard_alphabet_chars  // [64]u8
-base64.url_safe_alphabet_chars  // [64]u8
+var r: std.Io.Reader = .fixed(encoded_data);
+try std.base64.standard.Decoder.decodeReader(&r, &buf);
 ```
 
 ## Error Handling
 
 ```zig
-base64.standard.Decoder.decode(dest, source) catch |err| switch (err) {
-    error.InvalidCharacter => // character not in alphabet
-    error.InvalidPadding => // incorrect padding
-    error.NoSpaceLeft => // dest buffer too small (DecoderWithIgnore only)
+std.base64.standard.Decoder.decode(dest, source) catch |err| switch (err) {
+    error.InvalidCharacter => { /* character not in alphabet */ },
+    error.InvalidPadding => { /* incorrect = padding */ },
+    error.NoSpaceLeft => { /* dest too small (decoderWithIgnore only) */ },
 };
+```
+
+## Alphabet Access
+
+```zig
+// Direct access to alphabet character tables
+std.base64.standard_alphabet_chars   // [64]u8 — "A-Za-z0-9+/"
+std.base64.url_safe_alphabet_chars   // [64]u8 — "A-Za-z0-9-_"
+
+// Inverse lookup tables (for manual implementation)
+std.base64.standard_map_char_to_6_bits   // [128]u6
+std.base64.url_safe_map_char_to_6_bits   // [128]u6
 ```
 
 ## Common Patterns
 
-### Encode binary data for JSON/URLs
-```zig
-fn encodeForUrl(data: []const u8, buf: []u8) []const u8 {
-    return std.base64.url_safe_no_pad.Encoder.encode(buf, data);
-}
-```
+### JWT Payload Decode
 
-### Decode JWT payload
 ```zig
 fn decodeJwtPayload(payload: []const u8, buf: []u8) ![]u8 {
     const decoder = std.base64.url_safe_no_pad.Decoder;
@@ -120,21 +130,41 @@ fn decodeJwtPayload(payload: []const u8, buf: []u8) ![]u8 {
 }
 ```
 
-### Handle multi-line Base64 (PEM format)
+### PEM Format Decode
+
 ```zig
-fn decodePem(pem_data: []const u8, buf: []u8) ![]u8 {
-    // Skip header/footer, decode with newline ignoring
+fn decodePem(pem: []const u8, buf: []u8) ![]u8 {
+    // Find Base64 content between header/footer
+    const start = std.mem.indexOf(u8, pem, "-----BEGIN") orelse 0;
+    const b64 = std.mem.trim(u8, pem[start..], &[_]u8{'\n', '\r', '-'});
     const decoder = std.base64.standard.decoderWithIgnore("\n\r");
-    const max = try decoder.calcSizeUpperBound(pem_data.len);
-    const len = try decoder.decode(buf[0..max], pem_data);
-    return buf[0..len];
+    const max = try decoder.calcSizeUpperBound(b64.len);
+    return buf[0..try decoder.decode(buf[0..max], b64)];
 }
 ```
 
-## Notes
+### Encode Binary for URL
 
-- Standard uses `+` and `/` which need URL encoding
-- URL-safe uses `-` and `_` which are safe in URLs
-- Padding (`=`) makes length divisible by 4
-- `calcSizeForSlice` gives exact size; `calcSizeUpperBound` gives max (ignores padding)
-- All codecs use little-endian byte order internally
+```zig
+fn encodeUrlSafe(data: []const u8, buf: []u8) []const u8 {
+    return std.base64.url_safe_no_pad.Encoder.encode(buf, data);
+}
+```
+
+## Performance Characteristics
+
+| Operation | Complexity | Allocations |
+|-----------|------------|-------------|
+| `encode(buf, data)` | O(n) | 0 (fixed buffer) |
+| `decode(dest, src)` | O(n) | 0 (fixed buffer) |
+| `calcSize(n)` | O(1) | 0 |
+| `calcSizeForSlice(s)` | O(n) | 0 |
+| `encodeWriter(w, data)` | O(n) | 0 |
+
+## Gotchas
+
+1. **Output buffer must be large enough** — `encode` does NOT check bounds. Use `calcSize` first.
+2. **`calcSizeForSlice` scans the input** — it looks for padding. For untrusted input, consider `calcSizeUpperBound` + a sufficient buffer.
+3. **Padding character `=`** — URL-safe variants use `=` too. Use `no_pad` variants to omit padding.
+4. **Standard uses `+` and `/`** — these must be URL-encoded in URLs (`%2B`, `%2F`). Use `url_safe` alphabet instead.
+5. **`decoderWithIgnore` is slightly slower** — it skips ignored characters during decode. Use only when needed.

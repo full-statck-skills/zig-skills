@@ -12,7 +12,14 @@
   "skills": [
     "./skills/zig-0.15",
     "./skills/zig-0.16",
+    "./skills/zig-build-system",
     "./skills/zig-code-review",
+    "./skills/zig-concurrency",
+    "./skills/zig-crypto",
+    "./skills/zig-http",
+    "./skills/zig-json",
+    "./skills/zig-project-structure",
+    "./skills/zig-testing",
     "./skills/zig-tiger-style",
     "./skills/zig-raylib",
     "./skills/zig-sdl3-bindings"
